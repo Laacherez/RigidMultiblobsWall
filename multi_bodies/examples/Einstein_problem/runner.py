@@ -23,7 +23,7 @@ def generate_nonoverlapping_positions(N, Lx, Ly, Lz, a, max_attempts=100000):
     positions = []
     attempts = 0
     while len(positions) < N and attempts < max_attempts:
-        trial = np.random.uniform(low=[0, 0, 100], high=[Lx, Ly, 100 + Lz])
+        trial = np.random.uniform(low=[0, 0, 0], high=[Lx, Ly,  Lz])
         if is_valid(trial, np.array(positions), a):
             positions.append(trial)
         attempts += 1
@@ -34,6 +34,7 @@ def generate_nonoverlapping_positions(N, Lx, Ly, Lz, a, max_attempts=100000):
 def save_suspension(positions, output_dir):
     N = positions.shape[0]
     quat = np.tile([[0.0, 1.0, 0.0, 0.0]], (N, 1))
+    positions = np.atleast_2d(positions) # python 3.13
     to_save = np.hstack((positions, quat))
 
     os.makedirs(output_dir, exist_ok=True)
@@ -75,6 +76,7 @@ def run_single_simulation(run_idx, phi, args, phi_dir, multi_bodies_path, input_
     run_dir = os.path.join(phi_dir, f"run_{run_idx:04d}")
     os.makedirs(run_dir, exist_ok=True)
     N = compute_num_particles(args.Lx, args.Ly, args.Lz, args.a, phi)
+    print(N)
     try:
         positions = generate_nonoverlapping_positions(N, args.Lx, args.Ly, args.Lz, args.a)
     except RuntimeError as e:
@@ -115,8 +117,8 @@ if __name__ == '__main__':
     parser.add_argument('--a', type=float, default=0.055)
     parser.add_argument('--phi_min', type=float, default=5e-5)
     parser.add_argument('--phi_max', type=float, default=5e-4)
-    parser.add_argument('--n_phi', type=int, default=5)
-    parser.add_argument('--num_runs', type=int, default=3)
+    parser.add_argument('--n_phi', type=int, default=2)
+    parser.add_argument('--num_runs', type=int, default=1)
     parser.add_argument('--out', type=str, default='sweep_runs')
     parser.add_argument('--multi_bodies', type=str, default='multi_bodies.py')
     parser.add_argument('--input_file', type=str, default='inputfile_blobs.dat')

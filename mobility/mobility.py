@@ -4,11 +4,11 @@ import numpy as np
 import scipy.sparse
 import sys
 import time
-import imp
+import importlib.util as imp
 
 # If pycuda is installed import mobility_pycuda
 try:
-  imp.find_module('pycuda')
+  imp.find_spec('pycuda')
   found_pycuda = True
 except ImportError:
   found_pycuda = False
@@ -26,7 +26,7 @@ if found_pycuda:
 
 # If numba is installed import mobility_numba
 try: 
-  imp.find_module('numba')
+  imp.find_spec('numba')
   found_numba = True
 except ImportError:
   found_numba = False

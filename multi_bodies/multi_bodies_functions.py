@@ -7,7 +7,7 @@ bodies or the slip on the blobs.
 
 import numpy as np
 import sys
-import imp
+import importlib.util as imp
 import os.path
 from functools import partial
 
@@ -16,7 +16,7 @@ from quaternion_integrator.quaternion import Quaternion
 
 # If pycuda is installed import forces_pycuda
 try: 
-  imp.find_module('pycuda')
+  imp.find_spec('pycuda')
   found_pycuda = True
 except ImportError:
   found_pycuda = False
@@ -34,7 +34,7 @@ if found_pycuda:
       from .multi_bodies import forces_pycuda
 # If numba is installed import forces_numba
 try: 
-  imp.find_module('numba')
+  imp.find_spec('numba')
   found_numba = True
 except ImportError:
   found_numba = False

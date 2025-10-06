@@ -6,15 +6,17 @@ scheme					                       stochastic_adams_bashforth_rollers
 
 # Define implementation to compute the blobs mobility 
 mobility_vector_prod_implementation    numba_no_wall
+mobility_blobs_implementation            C++_no_wall
+domain                                 no_wall
 
 # Define implementation to compute the blobs-blob force and pass its arguments
-blob_blob_force_implementation	       numba_no_wall
+blob_blob_force_implementation	       numba
 repulsion_strength	   		            0.0165677856
 debye_length	   			                 0.06
 
 # Set time step, number of steps and save frequency
 dt		 	   	     	                     0.01
-n_steps					                       500
+n_steps					                       1000
 n_save  				                       1
 initial_step				                   0
 solver_tolerance			                 1e-3
@@ -34,7 +36,7 @@ debye_length_wall	   		               1 #0.06
 
 
 shear                            0 0 0
-periodic_length                 4. 4. 4.
+periodic_length                 10 10 10
 # Seed random number generator
 # seed					 1
 

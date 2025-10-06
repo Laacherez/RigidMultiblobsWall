@@ -100,6 +100,8 @@ class ReadInput(object):
     tmp_Laplace = np.fromstring(self.options.get('background_Laplace') or 'None', sep=' ')
     self.background_Laplace = np.hstack([tmp_Laplace, np.zeros(9 - tmp_Laplace.size)]).flatten()
     self.diffusion_coefficient = float(self.options.get('diffusion_coefficient') or 1.0)
+    self.shear = np.fromstring(self.options.get('shear') or '0 0 0', sep=' ')    
+
 
     # Create list with [vertex_file, clones_file] for each structure
     self.num_free_bodies = number_of_structures

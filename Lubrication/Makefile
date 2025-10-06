@@ -1,31 +1,25 @@
-# location of the Python header files
-PYTHON_VERSION = 3.8
-PYTHON_DIR = /usr
-# PYTHON_DIR = /usr/local/pkg/python/$(PYTHON_VERSION)
-PYTHON_INCLUDE = $(PYTHON_DIR)/include/python$(PYTHON_VERSION)
-PYTHON_LIB = $(PYTHON_DIR)/lib/python$(PYTHON_VERSION)/config/
+# Use Homebrew g++-15 explicitly
+CXX = g++-15
 
-# location of the Boost Python include files and library
-BOOST_INC = /usr/include/boost
-BOOST_LIB = /usr/lib64
+# Python configuration
+PYTHON_VERSION = 3.13
+PYTHON_DIR = /Users/juls/RigidMultiblobsWall-1/.venv/bin/python3
+PYTHON_INCLUDE = /opt/homebrew/opt/python@$(PYTHON_VERSION)/Frameworks/Python.framework/Versions/$(PYTHON_VERSION)/include/python$(PYTHON_VERSION)
+PYTHON_LIB = /opt/homebrew/opt/python@$(PYTHON_VERSION)/Frameworks/Python.framework/Versions/$(PYTHON_VERSION)/lib
 
-EIGEN_INC = /usr/include/eigen3
+# Boost configuration
+BOOST_INC = /opt/homebrew/opt/boost/include
+BOOST_LIB = /opt/homebrew/opt/boost/lib
 
-# Location of Fortran libraries,
-# uncomment to use the Fast Multipole Metho library dstfmmlib3d-1.2
-# FORTRAN_LIB = --link-fopenmp -L/path/to/stfmmlib3d-1.2/ -lstfmm3d 
+# Eigen configuration (header-only)
+EIGEN_INC = /opt/homebrew/opt/eigen/include/eigen3
 
-CXX_FLAGS = -D__FILENAME__='"$(shell pwd)"'
+# Compilation flags
+CXX_FLAGS = -O3 -std=c++17 -fPIC -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -I$(EIGEN_INC) -D__FILENAME__='"$(shell pwd)"'
 
-# 
-TARGET = Lubrication_Class
+# Linking flags
+LDFLAGS = -shared -dynamiclib -L$(BOOST_LIB) -L$(PYTHON_LIB) \
+	-lpython$(PYTHON_VERSION) \
+	-lboost_python$(subst .,,$(PYTHON_VERSION))
 
-all: $(TARGET).so
 
-$(TARGET).so: $(TARGET).o
-	g++ -O3 -shared  -dynamiclib $(TARGET).o -L$(BOOST_LIB)  -lboost_python38 -lboost_numpy38 -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so
-
-$(TARGET).o: $(TARGET).cc
-	g++ -O3 -std=c++11 -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -I$(EIGEN_INC) $(CXX_FLAGS) -fPIC -c $(TARGET).cc
-clean: 
-	rm -f $(TARGET).o $(TARGET).so
