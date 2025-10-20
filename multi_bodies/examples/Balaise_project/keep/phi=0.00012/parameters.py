@@ -46,10 +46,20 @@ um_to_m = 1e-6
 
 # Lengths, in m
 box_x_length = all_parameters.get("periodic_length")[0] * um_to_m # m
-box_y_width = all_parameters.get("periodic_length")[0] * um_to_m  # m
+box_y_width = all_parameters.get("periodic_length")[1] * um_to_m  # m
 evanescent_slice_z_height = 500e-9                                # m
 particle_radius = all_parameters.get("blob_radius") * um_to_m     # m
 
 # Temperature
 kBT = all_parameters.get("kT") * mg_to_kg * um_to_m ** 2
 g = all_parameters.get("g") * mg_to_kg * um_to_m # buoyant mass * g
+
+# Times
+time_step = all_parameters.get("dt")
+
+# Shears
+shear_rate = all_parameters.get("shear")[2]
+
+# Debye
+B = 3.
+lD = all_parameters.get("debye_length_wall") * um_to_m # m

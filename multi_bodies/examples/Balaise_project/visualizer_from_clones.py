@@ -44,7 +44,7 @@ def parse_config(path: str) -> Tuple[List[np.ndarray], int]:
                 if len(vals) < 3:
                     raise ValueError(f"Too few numbers in particle row: {ln}")
                 x, y, z = map(float, vals[:3])
-                xyz.append((x, y, z))
+                xyz.append((x%25, y%25, z))
             frames.append(np.asarray(xyz, dtype=float))
 
     if not frames:
@@ -85,8 +85,11 @@ def main():
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     ax.set_zlim(zmin, zmax)
+    # ax.set_xlim(0, 10000)
+    # ax.set_ylim(0, 10)
+    # ax.set_zlim(0, 10)
     ax.set_xlabel("X"); ax.set_ylabel("Y"); ax.set_zlabel("Z")
-    ax.view_init(elev=0, azim=45)    
+    ax.view_init(elev=0, azim=270)    
 
 
     ax.set_box_aspect((xmax - xmin, ymax - ymin, zmax - zmin))
@@ -120,4 +123,4 @@ if __name__ == "__main__":
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
-#python visualizer_from_clones.py "run_blobs.sphere_array.config" -o video.mp4 --fps 30
+#python visualizer_from_clones.py "run_blobs.sphere_array.config" -o video.mp4 --fps 300

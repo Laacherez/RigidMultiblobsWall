@@ -35,7 +35,7 @@ all_parameters = read_dat("inputfile_blobs.dat")
 # Densities (particle/volume), in SI
 phi_min = 3e-5                                          # Number
 phi_max = 3e-4                                          # Number
-how_many_phi = 4                                        # Number
+how_many_phi = 1                                        # Number
 phi_array = np.linspace(phi_min, phi_max, how_many_phi)
 
 # Conversions.
@@ -46,10 +46,20 @@ um_to_m = 1e-6
 
 # Lengths, in m
 box_x_length = all_parameters.get("periodic_length")[0] * um_to_m # m
-box_y_width = all_parameters.get("periodic_length")[0] * um_to_m  # m
+box_y_width = all_parameters.get("periodic_length")[1] * um_to_m  # m
 evanescent_slice_z_height = 500e-9                                # m
 particle_radius = all_parameters.get("blob_radius") * um_to_m     # m
 
 # Temperature
 kBT = all_parameters.get("kT") * mg_to_kg * um_to_m ** 2
 g = all_parameters.get("g") * mg_to_kg * um_to_m # buoyant mass * g
+
+# Times
+time_step = all_parameters.get("dt")
+
+# Shears
+shear_rate = all_parameters.get("shear")[2]
+
+# Debye
+B = 10.
+lD = all_parameters.get("debye_length_wall") * um_to_m # m

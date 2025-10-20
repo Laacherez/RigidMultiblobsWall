@@ -35,7 +35,7 @@ all_parameters = read_dat("inputfile_blobs.dat")
 # Densities (particle/volume), in SI
 phi_min = 3e-5                                          # Number
 phi_max = 3e-4                                          # Number
-how_many_phi = 1                                        # Number
+how_many_phi = 4                                        # Number
 phi_array = np.linspace(phi_min, phi_max, how_many_phi)
 
 # Conversions.
@@ -61,5 +61,5 @@ time_step = all_parameters.get("dt")
 shear_rate = all_parameters.get("shear")[2]
 
 # Debye
-B = 10.
+B = 3.
 lD = all_parameters.get("debye_length_wall") * um_to_m # m
