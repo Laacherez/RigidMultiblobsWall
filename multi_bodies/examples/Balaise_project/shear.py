@@ -19,4 +19,6 @@ def runner() :
 
 if __name__ == "__main__":
     configuration("inputfile_shear_blobs.dat")
+    configuration("multi_bodies.py")
+
     runner()

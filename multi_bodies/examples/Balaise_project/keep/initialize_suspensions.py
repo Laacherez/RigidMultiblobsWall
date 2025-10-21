@@ -7,19 +7,21 @@ def compute_boltzmann_length(kT, g) :
     print(kT/(g))
     return kT/(g)
 
-def Peq_nonorm(cell_height, kT, g) : #... ehh
-    return np.exp(-( cell_height/compute_boltzmann_length(kT, g)))
+def Peq_nonorm(cell_height, kT, g, B, debye_length) : #... ehh # Also, modded it to accomodate Debye.
+    return np.exp(-(B * np.exp(-cell_height/debye_length) + cell_height/compute_boltzmann_length(kT, g)))
+    # return np.exp(-( cell_height/compute_boltzmann_length(kT, g)))
 
-def Peq_yesnorm(cell_height, kT, g) : #admittedly, this should fall into the boolistic regime.
-    return np.exp(-( cell_height/compute_boltzmann_length(kT, g))) / trapezoid(np.exp(-( cell_height/compute_boltzmann_length(kT, g))), cell_height)
+def Peq_yesnorm(cell_height, kT, g, B, debye_length) : #admittedly, this should fall into the boolistic regime.
+    Peq = Peq_nonorm(cell_height, kT, g, B, debye_length)
+    return Peq / trapezoid(Peq, cell_height)
 
-def compute_true_phi(cell_height, evanescence, kT, g, phi) : # Computes the concentration to input before thermalisation. 
+def compute_true_phi(cell_height, evanescence, kT, g, B, debye_length, phi) : # Computes the concentration to input before thermalisation. 
     Boltzmann_length = compute_boltzmann_length(kT, g)
-    cell_height_array = np.linspace(0, 5* cell_height, 100000)
-    Peq = Peq_yesnorm(cell_height_array, kT, g)
+    cell_height_array = np.linspace(0, 5* Boltzmann_length, 100000)
+    Peq = Peq_yesnorm(cell_height_array, kT, g, B, debye_length)
     until_lambda = cell_height_array <= evanescence
     N_lambda = trapezoid(Peq[until_lambda], cell_height_array[until_lambda])
-    true_phi = phi * evanescence / (N_lambda * 4.7 * Boltzmann_length)
+    true_phi = phi * evanescence / (N_lambda * 5 * Boltzmann_length)
     print(true_phi, N_lambda)
     return true_phi
 
@@ -36,7 +38,7 @@ def is_valid(pos, existing_positions, particle_radius, min_dist_factor=2.0): # W
     return np.all(dists >= min_dist_factor * particle_radius)
 
 
-def generate_and_save_positions(phi_target, xdim, ydim, evanescence, particle_radius, kT, g, max_attempts=100000, output_dir = "./", show=False): 
+def generate_and_save_positions(phi_target, xdim, ydim, evanescence, particle_radius, kT, g, B, debye_length, max_attempts=100000, output_dir = "./", show=False): 
     """
     Principal function. 
     Arguments :
@@ -49,8 +51,8 @@ def generate_and_save_positions(phi_target, xdim, ydim, evanescence, particle_ra
     - output_dir : where to save these positions to their clone files.
     """
 
-    cell_height = 4.7 * compute_boltzmann_length(kT, g) # Compute the height below which 99% of particles lay.
-    true_phi = compute_true_phi(cell_height, evanescence, kT, g, phi_target) # Compute the real concentration of that total slice to reach phi_target under evanescence height after thermalistion. (particles sediment)
+    cell_height = 5 * compute_boltzmann_length(kT, g) # Compute the height below which 99% of particles lay.
+    true_phi = compute_true_phi(cell_height, evanescence, kT, g, B, debye_length, phi_target) # Compute the real concentration of that total slice to reach phi_target under evanescence height after thermalistion. (particles sediment)
     N = compute_num_particles(xdim, ydim, cell_height, particle_radius, true_phi) # Compute the corresponding amount of paerticles in the 5lB box.
     positions = []
     attempts = 0
@@ -108,6 +110,8 @@ if __name__ == '__main__':
     g = parameters.g
     xdim = parameters.box_x_length
     ydim = parameters.box_y_width
+    B = parameters.B
+    debye_length = parameters.lD
     
     
     evanescence = parameters.evanescent_slice_z_height
@@ -120,7 +124,6 @@ if __name__ == '__main__':
         phi_dirname = f"phi={phi:.4g}"
         phi_dir = os.path.join(output_dir, phi_dirname)
         os.makedirs(phi_dir, exist_ok=True)
-        generate_and_save_positions(phi, xdim, ydim, evanescence, particle_radius, kBT, g, max_attempts=100000, output_dir = "./" + phi_dirname, show=True)
-
+        generate_and_save_positions(phi, xdim, ydim, evanescence, particle_radius, kBT, g, B, debye_length, max_attempts=100000, output_dir = "./" + phi_dirname, show=True)
 
 #cd multi_bodies/examples/Balaise_project
