@@ -1,0 +1,8 @@
+Simulations are run using the \href{https://github.com/stochasticHydroTools/RigidMultiblobsWall}{RigidMultiblobsWall} packages. These packages allow for the stochastic simulation of colloidal suspensions in Stokes flows, confined above a rigid wall.
+
+A simple protocol is followed for a single simulation : a box of size (x,y,z) = (25 \(\mu\), 25\(\mu\)m, 5 \(l_\mathrm{B})\), with \(l_\mathrm{B}\) the Boltzmann length, is created with periodic boundary conditions enforced along \(x\) and \(y\) and a semi-infinite plane in \(z\) above a rigid wall at \(z=0 \mu\)m. Dimensions are chosen in \(x\) and \(y\) to respect experimental limitations on the observation window, and in \(z\) to ensure most particles remain in the simulation box during the whole simulation.
+A set number of particles is then assigned at a random position within the simulation box with an exclusion algorithm owing to their finite-size, ensuring their altitude is sampled from the Gibbs-Boltzmann distribution (wall-particle electrostatic repulsion and gravity-induced sedimentation for a perfect solution). This avoids costly thermalisation and sedimentation of the system.
+The number of particles within the initial simulation box is pre-computed to ensure a given concentration within the evanescent slice, below \(z = 500\)nm.
+
+A shear flow is then applied to the system along \(x\) and each individual particle's trajectory is retrieved at each time step. Owing to the TIRF limitations, trajectories exciting the evanescent slice from below are killed, and trajectories entering or re-entering the slice from above are treated as new trajectories.
+Diffusion coefficients can then be inferred from the enseemble-averaged MSDs computed from the segmented trajectories. 

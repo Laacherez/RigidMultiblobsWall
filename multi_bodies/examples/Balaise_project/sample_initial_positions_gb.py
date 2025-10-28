@@ -5,14 +5,9 @@ import matplotlib.pyplot as plt
 import shutil
 
 def compute_boltzmann_length(kT, g):
-    # g is buoyant weight (m_b g)
     return kT / g
 
 def _build_inverse_cdf(H, R, kT, g, B, debye_length, ngrid=20000):
-    """
-    Precompute z-grid, pdf(z) ∝ exp(-(z/ell + B*exp(-z/lD))), and its CDF over [R, H-R].
-    Returns callable sampler() that draws one z by inverse transform.
-    """
     ell = compute_boltzmann_length(kT, g)
     zmin, zmax = R, H - R
     if not (zmax > zmin):
@@ -26,13 +21,10 @@ def _build_inverse_cdf(H, R, kT, g, B, debye_length, ngrid=20000):
     # Normalize via CDF
     cdf = cumulative_trapezoid(pdf, z, initial=0.0)
     Z = cdf[-1]
-    if Z <= 0:
-        raise ValueError("PDF normalization failed (check parameters).")
     cdf /= Z
 
     def sample_z(rng=np.random):
         u = rng.random()
-        # Invert CDF by interpolation
         return np.interp(u, cdf, z)
 
     return sample_z
@@ -66,6 +58,22 @@ def is_valid(pos, existing_positions, particle_radius, min_dist_factor=2.0):
     d = existing_positions - pos
     dists = np.linalg.norm(d, axis=1)
     return np.all(dists >= min_dist_factor * particle_radius)
+
+
+
+def visualize_positions_3d(positions, xdim, ydim, H):
+    from mpl_toolkits.mplot3d import Axes3D  
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(positions[:, 0], positions[:, 1], positions[:, 2], s=30)
+    ax.set_xlim(0, xdim); ax.set_ylim(0, ydim); ax.set_zlim(0, H)
+    ax.set_xlabel('x'); ax.set_ylabel('y'); ax.set_zlabel('z')
+    ax.view_init(elev=0, azim=270)    
+
+    plt.tight_layout()
+    plt.show()
+
+
 
 
 def generate_and_save_positions(
@@ -103,22 +111,26 @@ def generate_and_save_positions(
     save_suspension(positions, output_dir)
     if show:
         histogram_of_initial_positions(positions, B, debye_length, lB)
-
+        visualize_positions_3d(positions, xdim, ydim, H)
 
 def save_suspension(positions, output_dir):
     N = positions.shape[0]
     quat = np.tile([[0.0, 1.0, 0.0, 0.0]], (N, 1))
     positions = np.atleast_2d(positions)
-    to_save = np.hstack((positions*1e6, quat))  # your µm export stays unchanged
+    to_save = np.hstack((positions*1e6, quat))
     os.makedirs(output_dir, exist_ok=True)
     fname = os.path.join(output_dir, 'sphere_array.clones')
     np.savetxt(fname, to_save, header=str(N), comments='')
 
 def histogram_of_initial_positions(positions, B, debye_length, lB):
-    xpos = positions[:, 0]; ypos = positions[:, 1]; zpos = positions[:, 2]
-    plt.hist(xpos, bins=20, label="x", alpha=.5, density = True)
-    plt.hist(ypos, bins=20, label="y", alpha=.5, density = True)
-    plt.hist(zpos, bins=20, label="z", alpha=.5, density = True)
+    xpos = positions[:, 0]
+    ypos = positions[:, 1]
+    zpos = positions[:, 2]
+
+    bins = 20 
+    plt.hist(xpos, bins=bins, label="x", alpha=.5, density = True)
+    plt.hist(ypos, bins=bins, label="y", alpha=.5, density = True)
+    plt.hist(zpos, bins=bins, label="z", alpha=.5, density = True)
     plt.ylabel("P(q)"); plt.xlabel("Position")
 
     zarray = np.linspace(0, 5 * lB, 1000)

@@ -44,7 +44,7 @@ def parse_config(path: str) -> Tuple[List[np.ndarray], int]:
                 if len(vals) < 3:
                     raise ValueError(f"Too few numbers in particle row: {ln}")
                 x, y, z = map(float, vals[:3])
-                xyz.append((x%25, y%25, z))
+                xyz.append((x%25, y%100, z))
             frames.append(np.asarray(xyz, dtype=float))
 
     if not frames:
@@ -60,6 +60,20 @@ def compute_bounds(frames: List[np.ndarray], pad=0.05):
     return (mn[0]-margin[0], mx[0]+margin[0]), \
            (mn[1]-margin[1], mx[1]+margin[1]), \
            (mn[2]-margin[2], mx[2]+margin[2])
+
+
+
+def visualize_positions_3d(positions, xdim, ydim, H):
+    from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 (needed for 3D)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(positions[:, 0], positions[:, 1], positions[:, 2], s=5)
+    ax.set_xlim(0, xdim); ax.set_ylim(0, ydim); ax.set_zlim(0, H)
+    ax.set_xlabel('x'); ax.set_ylabel('y'); ax.set_zlabel('z')
+    plt.tight_layout()
+    plt.show()
+
+
 
 def main():
     ap = argparse.ArgumentParser(description="Render particle positions.")
@@ -100,13 +114,15 @@ def main():
 
     def init():
         scat._offsets3d = (frames[0][:, 0], frames[0][:, 1], frames[0][:, 2])
-        title.set_text(f"frame 1 / {n_frames}")
+        time = 0
+        title.set_text(f"t = 0 s")
         return scat, title
 
     def update(i):
         pts = frames[i]
         scat._offsets3d = (pts[:, 0], pts[:, 1], pts[:, 2])
-        title.set_text(f"frame {i+1} / {n_frames}")
+        time = 1e-4 * (i+1)
+        title.set_text(f"t = {time:.2f} s")
         return scat, title
 
     anim = animation.FuncAnimation(fig, update, init_func=init, frames=n_frames, interval=1000/args.fps, blit=False)

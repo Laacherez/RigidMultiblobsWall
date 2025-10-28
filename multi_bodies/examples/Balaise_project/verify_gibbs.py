@@ -62,7 +62,7 @@ def verify_gibbs_boltzmann(positions, timestep_index = 5000):
     # plt.hist(xpos, bins=10, label="x", alpha = .5)
     # plt.hist(ypos, bins=10, label="y", alpha = .5)
     zarray = np.linspace(0, 5 * 2.20, 1000)
-    P_eq_nonorm = np.exp(-(10 * np.exp(-zarray/0.06) + zarray/2.2))
+    P_eq_nonorm = np.exp(-(5 * np.exp(-zarray/0.01) + zarray/2.2))
 
     P_eq_norm = P_eq_nonorm / trapezoid(P_eq_nonorm, zarray)
     plt.plot(zarray, P_eq_norm)
@@ -76,5 +76,5 @@ def verify_gibbs_boltzmann(positions, timestep_index = 5000):
 
 
 if __name__ == '__main__':
-    positions, n = parse_config(path = "./run_blobs.sphere_array.config")
-    verify_gibbs_boltzmann(positions, timestep_index=1000)
+    positions, n = parse_config(path = "./end.config")
+    verify_gibbs_boltzmann(positions, timestep_index=0)
