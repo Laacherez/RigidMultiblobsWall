@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
+
 def parse_config(path: str) -> Tuple[List[np.ndarray], int]:
     frames: List[np.ndarray] = []
     n_expected = None
@@ -27,12 +28,14 @@ def parse_config(path: str) -> Tuple[List[np.ndarray], int]:
                     if n_expected is None:
                         n_expected = n
                     elif n_expected != n:
-                        raise ValueError(f"Inconsistent particle count: {n} (expected {n_expected})")
+                        raise ValueError(
+                            f"Inconsistent particle count: {n} (expected {n_expected})"
+                        )
                     break
                 else:
                     raise ValueError(f"Expected particle count line, got: {ln}")
             else:
-                break 
+                break
 
             xyz = []
             for _ in range(n):
@@ -44,12 +47,13 @@ def parse_config(path: str) -> Tuple[List[np.ndarray], int]:
                 if len(vals) < 3:
                     raise ValueError(f"Too few numbers in particle row: {ln}")
                 x, y, z = map(float, vals[:3])
-                xyz.append((x%25, y%100, z))
+                xyz.append((x % 10, y % 10, z))
             frames.append(np.asarray(xyz, dtype=float))
 
     if not frames:
         raise ValueError("No frames parsed. Check the input path/content.")
     return frames, n_expected
+
 
 def compute_bounds(frames: List[np.ndarray], pad=0.05):
     all_xyz = np.concatenate(frames, axis=0)
@@ -57,39 +61,52 @@ def compute_bounds(frames: List[np.ndarray], pad=0.05):
     mx = all_xyz.max(axis=0)
     span = np.maximum(mx - mn, 1e-9)
     margin = span * pad
-    return (mn[0]-margin[0], mx[0]+margin[0]), \
-           (mn[1]-margin[1], mx[1]+margin[1]), \
-           (mn[2]-margin[2], mx[2]+margin[2])
-
+    return (
+        (mn[0] - margin[0], mx[0] + margin[0]),
+        (mn[1] - margin[1], mx[1] + margin[1]),
+        (mn[2] - margin[2], mx[2] + margin[2]),
+    )
 
 
 def visualize_positions_3d(positions, xdim, ydim, H):
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 (needed for 3D)
+
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection="3d")
     ax.scatter(positions[:, 0], positions[:, 1], positions[:, 2], s=5)
-    ax.set_xlim(0, xdim); ax.set_ylim(0, ydim); ax.set_zlim(0, H)
-    ax.set_xlabel('x'); ax.set_ylabel('y'); ax.set_zlabel('z')
+    ax.set_xlim(0, xdim)
+    ax.set_ylim(0, ydim)
+    ax.set_zlim(0, H)
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
     plt.tight_layout()
     plt.show()
-
 
 
 def main():
     ap = argparse.ArgumentParser(description="Render particle positions.")
     ap.add_argument("input", help="Path to the config file.")
-    ap.add_argument("-o", "--output", default="trajectories.mp4", help="Output .mp4 path.")
+    ap.add_argument(
+        "-o", "--output", default="trajectories.mp4", help="Output .mp4 path."
+    )
     ap.add_argument("--fps", type=int, default=30, help="Frames per second.")
     ap.add_argument("--dpi", type=int, default=200, help="Figure DPI.")
-    ap.add_argument("--size", type=int, nargs=2, metavar=("W", "H"), default=(1000, 1000), help="Figure size in pixels.")
+    ap.add_argument(
+        "--size",
+        type=int,
+        nargs=2,
+        metavar=("W", "H"),
+        default=(1000, 1000),
+        help="Figure size in pixels.",
+    )
     ap.add_argument("--marker-size", type=float, default=40.0, help="Marker size.")
     args = ap.parse_args()
 
-    animation.writers['ffmpeg']
-
+    animation.writers["ffmpeg"]
 
     frames, n = parse_config(args.input)
-    n_frames = len(frames)
+    n_frames = 1000
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = compute_bounds(frames)
 
     # Figure
@@ -102,15 +119,17 @@ def main():
     # ax.set_xlim(0, 10000)
     # ax.set_ylim(0, 10)
     # ax.set_zlim(0, 10)
-    ax.set_xlabel("X"); ax.set_ylabel("Y"); ax.set_zlabel("Z")
-    ax.view_init(elev=0, azim=270)    
-
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+    ax.view_init(elev=0, azim=270)
 
     ax.set_box_aspect((xmax - xmin, ymax - ymin, zmax - zmin))
 
-
     title = ax.set_title("Trajectories")
-    scat = ax.scatter(frames[0][:, 0], frames[0][:, 1], frames[0][:, 2], s=args.marker_size)
+    scat = ax.scatter(
+        frames[0][:, 0], frames[0][:, 1], frames[0][:, 2], s=args.marker_size
+    )
 
     def init():
         scat._offsets3d = (frames[0][:, 0], frames[0][:, 1], frames[0][:, 2])
@@ -121,16 +140,24 @@ def main():
     def update(i):
         pts = frames[i]
         scat._offsets3d = (pts[:, 0], pts[:, 1], pts[:, 2])
-        time = 1e-4 * (i+1)
+        time = 1e-4 * (i + 1)
         title.set_text(f"t = {time:.2f} s")
         return scat, title
 
-    anim = animation.FuncAnimation(fig, update, init_func=init, frames=n_frames, interval=1000/args.fps, blit=False)
+    anim = animation.FuncAnimation(
+        fig,
+        update,
+        init_func=init,
+        frames=n_frames,
+        interval=1000 / args.fps,
+        blit=False,
+    )
 
-    FF = animation.writers['ffmpeg']
-    writer = FF(fps=args.fps, codec='h264', bitrate=-1)
+    FF = animation.writers["ffmpeg"]
+    writer = FF(fps=args.fps, codec="h264", bitrate=-1)
     anim.save(args.output, writer=writer, dpi=args.dpi)
     print("Done.")
+
 
 if __name__ == "__main__":
     try:
@@ -139,4 +166,4 @@ if __name__ == "__main__":
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
-#python visualizer_from_clones.py "run_blobs.sphere_array.config" -o video.mp4 --fps 300
+# python video_from_config.py "run_blobs.sphere_array.config" -o video.mp4 --fps 300

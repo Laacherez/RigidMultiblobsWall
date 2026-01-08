@@ -1,0 +1,5 @@
+num_of_body_types  1
+body_names         ['sphere_array']
+body_types         [3405]
+num_bodies         3405
+num_blobs          3405

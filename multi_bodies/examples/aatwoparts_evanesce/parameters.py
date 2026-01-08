@@ -31,7 +31,7 @@ def read_dat(path):
 
 
 all_parameters = read_dat("inputfile_shear_blobs.dat")
-num_runs = 10
+num_runs = 100
 
 # Conversions.
 kg_to_mg = 1e6
@@ -60,9 +60,9 @@ lD = all_parameters.get("debye_length_wall") * um_to_m # m
 
 # Initial particle positions], maybe remove x range lol. i was real tired on monday
 particle_a_pos = (2.5e-6, 2.5e-6, 0.40e-6)
-particle_b_xrange = (2.0e-6, 2.5e-6)
+particle_b_xrange = (0.0e-6, 1.0e-6)
 particle_b_yrange = (2.0e-6, 2.5e-6)
-particle_b_z = 0.40e-6   - 2 * particle_radius
+particle_b_z = 0.40e-6   - 2 * particle_radius # maybe turn this into a range as well. daym
 
-how_many_along_x = 3
+how_many_along_x = 1
 how_many_along_y = 3

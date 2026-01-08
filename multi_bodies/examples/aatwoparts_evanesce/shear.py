@@ -11,10 +11,13 @@ def configuration(input_file) :
             shutil.copy(input_file, destination)
             print(f"Copied {input_file} to {destination}")
 
-def runner() :
-    for name in os.listdir("."):
-        if os.path.isdir(name) and name.startswith("A("):
-            subprocess.run(["python", "multi_bodies.py", "--input-file", "inputfile_shear_blobs.dat"], cwd=name)
+# def runner() :
+#     for name in os.listdir("."):
+#         if os.path.isdir(name) and name.startswith("A("):
+#             subprocess.run(["python", "multi_bodies.py", "--input-file", "inputfile_shear_blobs.dat"], cwd=name)
+
+def runner(cwd) :
+    subprocess.run(["python", "multi_bodies.py", "--input-file", "inputfile_shear_blobs.dat"], cwd=cwd)
 
 
 # def run_many(n=2):
@@ -41,7 +44,7 @@ def run_all(num_runs, BASE):
         
         
         for i in range(1, num_runs + 1):
-            runner()
+            runner(subdir)
             os.chdir(subdir)
             src = Path("run_blobs.sphere_array.config")
 

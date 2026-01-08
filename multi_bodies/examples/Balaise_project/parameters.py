@@ -3,6 +3,7 @@ from pathlib import Path
 
 """This file shall have all in SI."""
 
+
 def _coerce(token: str):
     try:
         f = float(token)
@@ -11,12 +12,13 @@ def _coerce(token: str):
     except ValueError:
         return token
 
+
 def read_dat(path):
     data = {}
     p = Path(path)
-    with p.open('r', encoding='utf-8') as f:
+    with p.open("r", encoding="utf-8") as f:
         for raw in f:
-            line = raw.split('#', 1)[0].strip()
+            line = raw.split("#", 1)[0].strip()
             if not line:
                 continue
             parts = line.split()
@@ -33,9 +35,9 @@ def read_dat(path):
 all_parameters = read_dat("inputfile_shear_blobs.dat")
 
 # Densities (particle/volume), in SI
-phi_min = 1.4e-5                                          # Number
-phi_max = 6e-4                                          # Number
-how_many_phi = 6                                       # Number
+phi_min = 0.001  # Number
+phi_max = 0.01  # Number
+how_many_phi = 3  # Number
 phi_array = np.linspace(phi_min, phi_max, how_many_phi)
 
 # Conversions.
@@ -45,22 +47,20 @@ mg_to_kg = 1e-6
 um_to_m = 1e-6
 
 # Lengths, in m
-box_x_length = all_parameters.get("periodic_length")[0] * um_to_m # m
-print(box_x_length)
+box_x_length = all_parameters.get("periodic_length")[0] * um_to_m  # m
 box_y_width = all_parameters.get("periodic_length")[1] * um_to_m  # m
-evanescent_slice_z_height = 500e-9                                # m
-particle_radius = all_parameters.get("blob_radius") * um_to_m     # m
+evanescent_slice_z_height = 500e-9  # m
+particle_radius = all_parameters.get("blob_radius") * um_to_m  # m
 
 # Temperature
-kBT = all_parameters.get("kT") * mg_to_kg * um_to_m ** 2
-g = all_parameters.get("g") * mg_to_kg * um_to_m # buoyant mass * g
+kBT = all_parameters.get("kT") * mg_to_kg * um_to_m**2
+g = all_parameters.get("g") * mg_to_kg * um_to_m  # buoyant mass * g
 
 # Times
 time_step = all_parameters.get("dt")
 
 # Shears
 shear_rate = all_parameters.get("shear")[2]
-print(shear_rate)
 # Debye
-B = 3.
-lD = all_parameters.get("debye_length_wall") * um_to_m # m
+B = 3.0
+lD = all_parameters.get("debye_length_wall") * um_to_m  # m

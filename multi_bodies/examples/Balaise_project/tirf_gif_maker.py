@@ -28,7 +28,9 @@ def parse_config(path: str) -> Tuple[List[np.ndarray], int]:
                     if n_expected is None:
                         n_expected = n
                     elif n_expected != n:
-                        raise ValueError(f"Inconsistent particle count: {n} (expected {n_expected})")
+                        raise ValueError(
+                            f"Inconsistent particle count: {n} (expected {n_expected})"
+                        )
                     break
                 else:
                     raise ValueError(f"Expected particle count line, got: {ln}")
@@ -45,7 +47,7 @@ def parse_config(path: str) -> Tuple[List[np.ndarray], int]:
                 if len(vals) < 3:
                     raise ValueError(f"Too few numbers in particle row: {ln}")
                 x, y, z = map(float, vals[:3])
-                xyz.append((x % 25, y % 100, z))
+                xyz.append((x % 10, y % 10, z))
             frames.append(np.asarray(xyz, dtype=float))
 
     if not frames:
@@ -59,29 +61,44 @@ def compute_bounds(frames: List[np.ndarray], pad=0.05):
     mx = all_xyz.max(axis=0)
     span = np.maximum(mx - mn, 1e-9)
     margin = span * pad
-    return (mn[0] - margin[0], mx[0] + margin[0]), \
-           (mn[1] - margin[1], mx[1] + margin[1]), \
-           (mn[2] - margin[2], mx[2] + margin[2])
+    return (
+        (mn[0] - margin[0], mx[0] + margin[0]),
+        (mn[1] - margin[1], mx[1] + margin[1]),
+        (mn[2] - margin[2], mx[2] + margin[2]),
+    )
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Render 2D particle positions (z = color).")
+    ap = argparse.ArgumentParser(
+        description="Render 2D particle positions (z = color)."
+    )
     ap.add_argument("input", help="Path to the config file.")
-    ap.add_argument("-o", "--output", default="trajectories_2d.mp4", help="Output .mp4 path.")
+    ap.add_argument(
+        "-o", "--output", default="trajectories_2d.mp4", help="Output .mp4 path."
+    )
     ap.add_argument("--fps", type=int, default=30, help="Frames per second.")
     ap.add_argument("--dpi", type=int, default=200, help="Figure DPI.")
-    ap.add_argument("--size", type=int, nargs=2, metavar=("W", "H"), default=(1000, 1000), help="Figure size in pixels.")
+    ap.add_argument(
+        "--size",
+        type=int,
+        nargs=2,
+        metavar=("W", "H"),
+        default=(1000, 1000),
+        help="Figure size in pixels.",
+    )
     ap.add_argument("--marker-size", type=float, default=40.0, help="Marker size.")
     args = ap.parse_args()
 
-    animation.writers['ffmpeg']
+    animation.writers["ffmpeg"]
 
     frames, n = parse_config(args.input)
     n_frames = len(frames)
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = compute_bounds(frames)
 
     # --- Custom colormap: bright green (0) → black (1)
-    cmap = LinearSegmentedColormap.from_list("green_black", [(0, "#00ff00"), (1, "#000000")])
+    cmap = LinearSegmentedColormap.from_list(
+        "green_black", [(0, "#00ff00"), (1, "#000000")]
+    )
 
     # --- Figure setup ---
     w_in, h_in = args.size[0] / args.dpi, args.size[1] / args.dpi
@@ -97,21 +114,22 @@ def main():
 
     # First frame
     pts = frames[0]
-    mask = pts[:, 2] <= 0.5
+    mask = pts[:, 2] <= 1.0
     scat = ax.scatter(
-        pts[mask, 0], pts[mask, 1],
+        pts[mask, 0],
+        pts[mask, 1],
         c=pts[mask, 2],
-        cmap=cmap, s=args.marker_size,
-        vmin=0, vmax=0.5
+        cmap=cmap,
+        s=args.marker_size,
+        vmin=0,
+        vmax=0.5,
     )
-
-
 
     # Colorbar
     cbar = fig.colorbar(scat, ax=ax)
     cbar.set_label("Z", color="white")
     cbar.ax.yaxis.set_tick_params(color="white")
-    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color="white")
+    plt.setp(plt.getp(cbar.ax.axes, "yticklabels"), color="white")
 
     def init():
         scat.set_offsets(np.c_[frames[0][:, 0], frames[0][:, 1]])
@@ -120,7 +138,7 @@ def main():
 
     def update(i):
         pts = frames[i]
-        mask = pts[:, 2] <= 0.5
+        mask = pts[:, 2] <= 1.0
         if np.any(mask):
             scat.set_offsets(np.c_[pts[mask, 0], pts[mask, 1]])
             scat.set_array(pts[mask, 2])
@@ -132,14 +150,17 @@ def main():
         title.set_text(f"t = {time:.2f} s")
         return scat, title
 
-
     anim = animation.FuncAnimation(
-        fig, update, init_func=init,
-        frames=n_frames, interval=1000 / args.fps, blit=False
+        fig,
+        update,
+        init_func=init,
+        frames=n_frames,
+        interval=1000 / args.fps,
+        blit=False,
     )
 
-    FF = animation.writers['ffmpeg']
-    writer = FF(fps=args.fps, codec='h264', bitrate=-1)
+    FF = animation.writers["ffmpeg"]
+    writer = FF(fps=args.fps, codec="h264", bitrate=-1)
     anim.save(args.output, writer=writer, dpi=args.dpi)
     print("Done: saved", args.output)
 
